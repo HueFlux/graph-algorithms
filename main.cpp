@@ -11,8 +11,6 @@ std::vector<Edge> Prim(const Graph& graph);
 // Uses Kruskal's algorithm to construct a minimum spanning tree of graph
 // Returns a vector of edges composing a minimum spanning tree of graph
 std::vector<Edge> Kruskal(const Graph& graph);
-// Returns true if Edge e's destination is not already in tree_vertices
-bool Extends_Tree(const Edge& e, const std::vector<Vertex>& tree_vertices);
 // Uses Dijkstra's algorithm to find the shortest path from vertex source
 // to every other vertex in graph
 // Returns a vector of arrays of the format {v, d, p} where v is another
@@ -71,22 +69,17 @@ int main() {
     return 0;
 }
 
-bool Extends_Tree(const Edge& e, const std::vector<Vertex>& tree_vertices) {
-    for (int i = 0; i < tree_vertices.size(); i++) {
-        if (e.destination == tree_vertices[i].id) {
-            return false;
-        }
-    }
-    return true;
-}
-
 std::vector<Edge> Prim(const Graph& graph) {
-    // Initialize tree vertices to first vertex in graph
-    std::vector<Vertex> tree_vertices = {graph.vertices[0]};
+    // Vector to keep track of visted vertices
+    // Index corresponds to vertex id
+    std::vector<bool> visited(graph.vertices.size(), false);
     std::vector<Edge> tree_edges;
     // Min-heap priority queue containing all adjacent edges to unvisited
     // vertices
     std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge> > new_edges;
+
+    // Mark first vertex of graph (initial vertex) as visted
+    visited[0] = true;
 
     // Populate priority queue with edges with initial vertex as source
     for (int i = 0; i < graph.vertices[0].adjacency_list.size(); i++) {
@@ -99,10 +92,10 @@ std::vector<Edge> Prim(const Graph& graph) {
         do { // Get minumum-weight edge that extends the tree
             next_edge = new_edges.top();
             new_edges.pop();
-        } while (!Extends_Tree(next_edge, tree_vertices));
+        } while (visited[next_edge.destination]);
 
         Vertex new_vertex = graph.vertices[next_edge.destination];
-        tree_vertices.push_back(new_vertex);
+        visited[new_vertex.id] = true;
         tree_edges.push_back(next_edge);
 
         // Add all edges with new vertex as source and to new_edges
