@@ -2,7 +2,6 @@
 #include "graph.hpp"
 #include <queue>
 #include "disjoint_subsets.hpp"
-#include <limits>
 #include <array>
 
 // Uses Prim's algorithm to construct a minimum spanning tree of graph
@@ -63,7 +62,8 @@ int main() {
     for (int i = 1; i < shortest_paths.size(); i++) {
         std::cout << "To: " << vertex_names[shortest_paths[i][0]]
                   << " Distance: " << shortest_paths[i][1]
-                  << " Predecessor: " << vertex_names[shortest_paths[i][2]] << std::endl;
+                  << " Predecessor: " << vertex_names[shortest_paths[i][2]]
+                  << std::endl;
     }
 
     return 0;
@@ -147,14 +147,11 @@ std::vector<std::array<int, 3> > Dijkstra(const Graph& graph, int source) {
         // Id of vertex to which Label belongs
         int vertex_id;
         // Predecessor vertex in current shortest path from source to vertex
-        // Value is -1 if no path is currently known or vertex is source
-        int predecessor = -1;
-        // Length of current shortest path from source to vertex
-        // Value is maximum integer value if no path is currently known
-        int cost = std::numeric_limits<int>::max();
+        // Value is -1 if vertex is source
+        int predecessor;
+        // Length of current known shortest path from source to vertex
+        int cost;
 
-        Label() = default;
-        Label(int vertex_id) : vertex_id(vertex_id) {}
         Label(int vertex_id, int predecessor, int cost) :
             vertex_id(vertex_id),
             predecessor(predecessor),
