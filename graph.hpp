@@ -17,8 +17,8 @@ class Edge {
             weight (w)
         {}
 
-        friend bool operator>(const Edge& rhs, const Edge& lhs) {
-            return rhs.weight > lhs.weight;
+        friend bool operator>(const Edge& lhs, const Edge& rhs) {
+            return lhs.weight > rhs.weight;
         }
 };
 
@@ -37,7 +37,7 @@ class Vertex {
 
 class Graph {
     public:
-        // Vector containing all dges of graph
+        // Vector containing all edges of graph
         std::vector<Edge> edges;
         // Vector containing all vertices of graph
         std::vector<Vertex> vertices;

@@ -20,6 +20,7 @@ std::vector<std::array<int, 3> > Dijkstra(const Graph& graph, int source);
 int main() {
     std::string vertex_names = "abcdefghijklmnopqrstuvwxyz";
     // Sample adjacency matrix of weighted connected graph
+    // See sample_graph.jpg for graph diagram
     std::vector<std::vector<int> > adjacency_matrix = {
         {0, 3, 5, 4, 0, 0, 0, 0, 0, 0, 0, 0},
         {3, 0, 0, 0, 3, 6, 0, 0, 0, 0, 0, 0},
@@ -98,8 +99,7 @@ std::vector<Edge> Prim(const Graph& graph) {
         visited[new_vertex.id] = true;
         tree_edges.push_back(next_edge);
 
-        // Add all edges with new vertex as source and to new_edges
-        // priority queue
+        // Add all edges with new vertex as source to new_edges priority queue
         for (int j = 0; j < new_vertex.adjacency_list.size(); j++) {
             new_edges.push(new_vertex.adjacency_list[j]);
         }
