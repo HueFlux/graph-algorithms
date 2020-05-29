@@ -3,6 +3,8 @@
 #include <queue>
 #include "disjoint_subsets.hpp"
 #include <array>
+#include <utility>
+#include <chrono>
 
 // Uses Prim's algorithm to construct a minimum spanning tree of graph
 // Returns a vector of edges composing a minimum spanning tree of graph
@@ -38,34 +40,48 @@ int main() {
 
     Graph graph = Graph(adjacency_matrix);
 
+    auto start = std::chrono::high_resolution_clock::now();
     std::vector<Edge> minimum_spanning_tree = Prim(graph);
-    std::cout << "Minimum Spanning Tree (Prim):" << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Minimum Spanning Tree (Prim):\n";
     for (Edge e : minimum_spanning_tree) {
         std::cout << vertex_names[e.source] << "<->"
-                  << vertex_names[e.destination] << std::endl;
+                  << vertex_names[e.destination] << '\n';
     }
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Time: " << duration.count() << " microseconds\n";
 
-    std::cout << std::endl;
+    std::cout << '\n';
 
+    start = std::chrono::high_resolution_clock::now();
     minimum_spanning_tree = Kruskal(graph);
-    std::cout << "Minimum Spanning Tree (Kruskal):" << std::endl;
+    stop = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Minimum Spanning Tree (Kruskal):\n";
     for (Edge e : minimum_spanning_tree) {
         std::cout << vertex_names[e.source] << "<->"
-                  << vertex_names[e.destination] << std::endl;
+                  << vertex_names[e.destination] << '\n';
     }
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Time: " << duration.count() << " microseconds" << '\n';
 
-    std::cout << std::endl;
+    std::cout << '\n';
 
     int source = 0;
+    start = std::chrono::high_resolution_clock::now();
     std::vector<std::array<int, 3> > shortest_paths = Dijkstra(graph, source);
-    std::cout << "Shortest Paths From " << vertex_names[source] << ":"
-              << std::endl;
+    stop = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Shortest Paths From " << vertex_names[source] << ":\n";
     for (int i = 1; i < shortest_paths.size(); i++) {
         std::cout << "To: " << vertex_names[shortest_paths[i][0]]
                   << " Distance: " << shortest_paths[i][1]
                   << " Predecessor: " << vertex_names[shortest_paths[i][2]]
-                  << std::endl;
+                  << '\n';
     }
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Time: " << duration.count() << " microseconds\n";
 
     return 0;
 }
@@ -83,8 +99,8 @@ std::vector<Edge> Prim(const Graph& graph) {
     visited[0] = true;
 
     // Populate priority queue with edges with initial vertex as source
-    for (int i = 0; i < graph.vertices[0].adjacency_list.size(); i++) {
-        new_edges.push(graph.vertices[0].adjacency_list[i]);
+    for (const Edge& edge : graph.vertices[0].adjacency_list) {
+        new_edges.push(edge);
     }
 
     for (int i = 1; i < graph.vertices.size(); i++) {
@@ -95,13 +111,13 @@ std::vector<Edge> Prim(const Graph& graph) {
             new_edges.pop();
         } while (visited[next_edge.destination]);
 
-        Vertex new_vertex = graph.vertices[next_edge.destination];
+        const Vertex& new_vertex = graph.vertices[next_edge.destination];
         visited[new_vertex.id] = true;
-        tree_edges.push_back(next_edge);
+        tree_edges.push_back(std::move(next_edge));
 
         // Add all edges with new vertex as source to new_edges priority queue
-        for (int j = 0; j < new_vertex.adjacency_list.size(); j++) {
-            new_edges.push(new_vertex.adjacency_list[j]);
+        for (const Edge& edge : new_vertex.adjacency_list) {
+            new_edges.push(edge);
         }
 
     }
@@ -118,8 +134,8 @@ std::vector<Edge> Kruskal(const Graph& graph) {
                         std::greater<Edge> > sorted_edges;
 
     // Populate priority queue with graph edges
-    for (int i = 0; i < graph.edges.size(); i++) {
-        sorted_edges.push(graph.edges[i]);
+    for (const Edge& edge : graph.edges) {
+        sorted_edges.push(edge);
     }
 
     // DisjointSubsets object used to keep track of conneced components and
@@ -134,7 +150,7 @@ std::vector<Edge> Kruskal(const Graph& graph) {
 
         // If edge does not create a cycle, add to tree
         if (subcomponents.Union(current_edge.source, current_edge.destination)) {
-            tree_edges.push_back(current_edge);
+            tree_edges.push_back(std::move(current_edge));
             encounter++;
         }
     }
@@ -174,7 +190,7 @@ std::vector<std::array<int, 3> > Dijkstra(const Graph& graph, int source) {
                         std::vector<Label>,
                         std::greater<Label> > fringe_vertices;
 
-    fringe_vertices.push(Label(source, -1, 0)); // Make label for source vertex
+    fringe_vertices.emplace(source, -1, 0); // Make label for source vertex
 
     // Loop variable to count shortest paths found
     int counter = 0;
@@ -193,17 +209,15 @@ std::vector<std::array<int, 3> > Dijkstra(const Graph& graph, int source) {
         std::array<int, 3> shortest_path = {current_label.vertex_id,
                                             current_label.cost,
                                             current_label.predecessor};
-        shortest_paths.push_back(shortest_path);
+        shortest_paths.push_back(std::move(shortest_path));
 
         // Get corresponding Vertex object in graph
-        Vertex current_vertex = graph.vertices[current_label.vertex_id];
+        const Vertex& current_vertex = graph.vertices[current_label.vertex_id];
         // Make new labels for all adjacent vertices
-        for (int j = 0; j < current_vertex.adjacency_list.size(); j++) {
-            // Connecting edge
-            Edge edge = current_vertex.adjacency_list[j];
-            fringe_vertices.push(Label(edge.destination,
-                                       edge.source,
-                                       current_label.cost + edge.weight));
+        for (const Edge& edge : current_vertex.adjacency_list) {
+            fringe_vertices.emplace(edge.destination,
+                                    edge.source,
+                                    current_label.cost + edge.weight);
         }
         counter++;
     }

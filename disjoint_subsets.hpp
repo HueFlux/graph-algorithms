@@ -29,7 +29,7 @@ class DisjointSubsets {
         DisjointSubsets(const std::vector<int>& set) {
             subsets.reserve(set.size());
             elements.reserve(set.size());
-            for (int i : set) {
+            for (const int& i : set) {
                 elements[i] = new Node(i, nullptr);
                 subsets.push_back(elements[i]);
             }
@@ -48,8 +48,8 @@ class DisjointSubsets {
         }
 
         ~DisjointSubsets() {
-            for(int i = 0; i < elements.size(); i++) {
-                delete elements[i];
+            for(auto& element : elements) {
+                delete element;
             }
         }
 

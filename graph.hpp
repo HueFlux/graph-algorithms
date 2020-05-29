@@ -2,6 +2,7 @@
 #define _GRAPH_HPP_
 
 #include <vector>
+#include <utility>
 
 class Edge {
     public:
@@ -49,7 +50,7 @@ class Graph {
         Graph(const std::vector<std::vector<int> >& adjacency_matrix);
 };
 
-inline Graph::Graph(std::vector<Edge> e, std::vector<Vertex> v) :
+Graph::Graph(std::vector<Edge> e, std::vector<Vertex> v) :
     edges (e),
     vertices (v)
 {}
@@ -68,7 +69,7 @@ Graph::Graph(const std::vector<std::vector<int> >& adjacency_matrix) {
                 edges.push_back(edge);
             }
         }
-        vertices.push_back(Vertex(i, adjacency_list));
+        vertices.emplace_back(i, std::move(adjacency_list));
     }
 }
 
